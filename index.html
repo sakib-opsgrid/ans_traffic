@@ -18,51 +18,73 @@
       INFOZILLION TELETECH BD LTD
     </div>
     <h1>Kibana<br/><span>Report Processor</span></h1>
-    <p class="subtitle">MNO &amp; IPTSP CDR &middot; Error / Success / Total &middot; Auto-formatted for Google Sheets</p>
+    <p class="subtitle">MNO &amp; IPTSP CDR &middot; Upload 4 CSVs &middot; Auto-formatted for Google Sheets</p>
     <div class="date-badge">
       <span class="label">Reporting date</span>
       <span class="value" id="date-display">&mdash;</span>
     </div>
   </header>
 
+  <!-- MNO Section -->
+  <div class="section-label mno-label">MNO CDR &mdash; Grameenphone &middot; Robi &middot; Banglalink &middot; Teletalk</div>
   <div class="upload-grid">
 
-    <div class="upload-card mno" id="mno-card">
-      <div class="card-type mno">MNO CDR</div>
-      <div class="card-title">Mobile Operators</div>
-      <div class="card-ops">Grameenphone &middot; Robi<br/>Banglalink &middot; Teletalk</div>
+    <div class="upload-card mno" id="mno-success-card">
+      <div class="card-type mno">MNO · SUCCESS</div>
+      <div class="card-title">ansResponseCode <span class="is-badge">is 1000</span></div>
       <div class="file-input-wrap">
-        <input type="file" id="mno-file" accept=".csv" />
-        <div class="file-btn">
-          <span>📄</span>
-          <span>Choose MNO CSV file</span>
-        </div>
+        <input type="file" id="mno-success-file" accept=".csv" />
+        <div class="file-btn"><span>📄</span><span>Choose CSV</span></div>
       </div>
-      <div class="file-status" id="mno-status">No file selected</div>
+      <div class="file-status" id="mno-success-status">No file selected</div>
     </div>
 
-    <div class="upload-card iptsp" id="iptsp-card">
-      <div class="card-type iptsp">IPTSP CDR</div>
-      <div class="card-title">Internet Operators</div>
-      <div class="card-ops">ADN &middot; FusionNet &middot; Mirnet<br/>Brilliant &middot; RanksITT &middot; +13 more</div>
+    <div class="upload-card mno error-card" id="mno-error-card">
+      <div class="card-type mno-err">MNO · ERROR</div>
+      <div class="card-title">ansResponseCode <span class="is-not-badge">is not 1000</span></div>
       <div class="file-input-wrap">
-        <input type="file" id="iptsp-file" accept=".csv" />
-        <div class="file-btn">
-          <span>📄</span>
-          <span>Choose IPTSP CSV file</span>
-        </div>
+        <input type="file" id="mno-error-file" accept=".csv" />
+        <div class="file-btn"><span>📄</span><span>Choose CSV</span></div>
       </div>
-      <div class="file-status" id="iptsp-status">No file selected</div>
+      <div class="file-status" id="mno-error-status">No file selected</div>
     </div>
 
   </div>
 
+  <!-- IPTSP Section -->
+  <div class="section-label iptsp-label">IPTSP CDR &mdash; ADN &middot; FusionNet &middot; Mirnet &middot; Brilliant &middot; RanksITT &middot; +13 more</div>
+  <div class="upload-grid">
+
+    <div class="upload-card iptsp" id="iptsp-success-card">
+      <div class="card-type iptsp">IPTSP · SUCCESS</div>
+      <div class="card-title">ansResponseCode <span class="is-badge">is 1000</span></div>
+      <div class="file-input-wrap">
+        <input type="file" id="iptsp-success-file" accept=".csv" />
+        <div class="file-btn"><span>📄</span><span>Choose CSV</span></div>
+      </div>
+      <div class="file-status" id="iptsp-success-status">No file selected</div>
+    </div>
+
+    <div class="upload-card iptsp error-card" id="iptsp-error-card">
+      <div class="card-type iptsp-err">IPTSP · ERROR</div>
+      <div class="card-title">ansResponseCode <span class="is-not-badge">is not 1000</span></div>
+      <div class="file-input-wrap">
+        <input type="file" id="iptsp-error-file" accept=".csv" />
+        <div class="file-btn"><span>📄</span><span>Choose CSV</span></div>
+      </div>
+      <div class="file-status" id="iptsp-error-status">No file selected</div>
+    </div>
+
+  </div>
+
+  <!-- Process -->
   <div class="process-wrap">
     <button class="process-btn" id="process-btn" disabled onclick="processFiles()">
       ⚡ Generate Report
     </button>
   </div>
 
+  <!-- Results -->
   <div class="results-section" id="results-section">
 
     <div class="results-header">
@@ -124,7 +146,6 @@
 </div>
 
 <div class="toast" id="toast"></div>
-
 <script src="app.js"></script>
 </body>
 </html>

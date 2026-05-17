@@ -2,56 +2,42 @@
 
 **Infozillion Teletech BD Ltd · Service Assurance**
 
-A lightweight browser-based tool to process Kibana CSV exports and generate daily ANS traffic reports — formatted directly for Google Sheets.
+Browser-based tool to process Kibana CSV exports and generate daily ANS traffic reports — formatted directly for Google Sheets.
 
 ---
 
-## What it does
+## How it works
 
-- Upload MNO CDR and IPTSP CDR CSV files exported from Kibana
-- Automatically calculates **Error**, **Success**, and **Total** per operator
-- Uses **yesterday's date** automatically (no manual input needed)
-- One-click **Copy for Google Sheets** or **Download as CSV**
+Upload **4 CSV files** exported from Kibana:
 
----
+| # | File | Filter used in Kibana |
+|---|------|-----------------------|
+| 1 | MNO Success   | A2P Transactional MNO CDR · `ansResponseCode is 1000` |
+| 2 | MNO Error     | A2P Transactional MNO CDR · `ansResponseCode is not 1000` |
+| 3 | IPTSP Success | A2P Transactional IPTSP CDR · `ansResponseCode is 1000` |
+| 4 | IPTSP Error   | A2P Transactional IPTSP CDR · `ansResponseCode is not 1000` |
 
-## Logic
-
-| ansResponseCode | Count as |
-|-----------------|----------|
-| `1000`          | ✅ Success |
-| anything else   | ❌ Error |
+The tool reads `applicableSmsGateway` from each CSV and counts rows per operator.
 
 ---
 
 ## Operators
 
-**MNO (A2P Transactional MNO CDR)**
-- Grameenphone, Banglalink, Robi, Teletalk
+**MNO:** Grameenphone, Banglalink, Robi, Teletalk
 
-**IPTSP (A2P Transactional IPTSP CDR)**
-- ADN, FusionNet, Mirnet, Brilliant, RanksITT, AmberIT, Metronet, Premium, RaceOnline, Bracnet, Weblink, RedData, BDCOM, BTCL, Link3, ICON, AGNI, ICC
+**IPTSP:** ADN, FusionNet, Mirnet, Brilliant, RanksITT, AmberIT, Metronet, Premium, RaceOnline, Bracnet, Weblink, RedData, BDCOM, BTCL, Link3, ICON, AGNI, ICC
 
 ---
 
-## How to use
+## Daily workflow
 
-### Step 1 — Export CSVs from Kibana
-1. Open Kibana → Discover
-2. Select **A2P Transactional MNO CDR**
-3. Set date range: yesterday 00:00:00 → 23:59:59
-4. No filters needed — export the full dataset
-5. Click **Share → CSV Export** (or use the download option)
-6. Repeat for **A2P Transactional IPTSP CDR**
-
-### Step 2 — Process
-1. Open the tool: `https://your-username.github.io/kibana-report-processor/`
-2. Upload MNO CSV → Upload IPTSP CSV
-3. Click **⚡ Generate Report**
-
-### Step 3 — Export to Google Sheets
-- Click **📋 Copy for Google Sheets**
-- Open your Google Sheet → click the first empty cell in the data area → Paste
+1. Open Kibana → Discover → **A2P Transactional MNO CDR**
+2. Set date: yesterday 00:00:00.000 → 23:59:59.999
+3. Filter: `ansResponseCode is 1000` → Export CSV (MNO Success)
+4. Filter: `ansResponseCode is not 1000` → Export CSV (MNO Error)
+5. Switch to **A2P Transactional IPTSP CDR** → repeat steps 3–4
+6. Open the tool → upload 4 files → **⚡ Generate Report**
+7. Click **📋 Copy for Google Sheets** → paste into Sheet
 
 ---
 
@@ -60,8 +46,8 @@ A lightweight browser-based tool to process Kibana CSV exports and generate dail
 ```
 kibana-csv-processor/
 ├── index.html   — Page structure
-├── style.css    — All styling
-├── app.js       — CSV parsing and report logic
+├── style.css    — Styling
+├── app.js       — Logic
 └── README.md    — This file
 ```
 
@@ -69,20 +55,13 @@ kibana-csv-processor/
 
 ## Deploy to GitHub Pages
 
-1. Create a new GitHub repository (e.g. `kibana-report-processor`)
-2. Upload all 4 files: `index.html`, `style.css`, `app.js`, `README.md`
-3. Go to **Settings → Pages**
-4. Source: **Deploy from a branch** → Branch: `main` → Folder: `/ (root)`
-5. Save — your site will be live at:
+1. Create repo (e.g. `kibana-report-processor`) — Public
+2. Upload all 4 files
+3. Settings → Pages → Branch: `main` → Folder: `/ (root)` → Save
+4. Live at: `https://your-username.github.io/kibana-report-processor/`
 
-```
-https://your-username.github.io/kibana-report-processor/
-```
+> All processing is done in the browser. No data is sent anywhere.
 
 ---
 
-## Notes
-
-- All processing happens **in the browser** — no data is sent to any server
-- Works fully offline after the page loads
-- Date auto-updates every day — no configuration needed
+© 2026 Najmaz Sakib · Infozillion Teletech Bd Ltd

@@ -3,7 +3,6 @@
    Infozillion Teletech BD Ltd · Service Assurance
    ───────────────────────────────────────────────────────── */
 
-/* ── Operator lists ── */
 const MNO_OPERATORS = [
   "Grameenphone", "Banglalink", "Robi", "Teletalk"
 ];
@@ -14,12 +13,15 @@ const IPTSP_OPERATORS = [
   "Weblink", "RedData", "BDCOM", "BTCL", "Link3", "ICON", "AGNI", "ICC"
 ];
 
-/* ── State ── */
-let mnoRawRows   = null;
-let iptspRawRows = null;
-let allResults   = [];
+/* ── State: 4 CSVs ── */
+let csvMnoSuccess   = null;  // MNO   ansResponseCode is     1000
+let csvMnoError     = null;  // MNO   ansResponseCode is not 1000
+let csvIptspSuccess = null;  // IPTSP ansResponseCode is     1000
+let csvIptspError   = null;  // IPTSP ansResponseCode is not 1000
 
-/* ── Date helper — yesterday in DD - Mon - YY format ── */
+let allResults = [];
+
+/* ── Yesterday: DD - Mon - YY ── */
 function getYesterday() {
   const d = new Date();
   d.setDate(d.getDate() - 1);
@@ -41,14 +43,13 @@ function parseCSV(text) {
 
   return lines.slice(1).map(line => {
     const cols = [];
-    let cur = "", inQuote = false;
+    let cur = "", inQ = false;
     for (const ch of line) {
-      if (ch === '"')              { inQuote = !inQuote; }
-      else if (ch === ',' && !inQuote) { cols.push(cur.trim()); cur = ""; }
-      else                         { cur += ch; }
+      if (ch === '"')             { inQ = !inQ; }
+      else if (ch === ',' && !inQ){ cols.push(cur.trim()); cur = ""; }
+      else                        { cur += ch; }
     }
     cols.push(cur.trim());
-
     const row = {};
     headers.forEach((h, i) => {
       row[h] = (cols[i] || "").replace(/^"|"$/g, "").trim();
@@ -57,75 +58,70 @@ function parseCSV(text) {
   });
 }
 
-/* ── Flexible field getter (case-insensitive key matching) ── */
-function getField(row, ...candidates) {
-  for (const key of candidates) {
-    const match = Object.keys(row).find(
-      k => k.toLowerCase() === key.toLowerCase()
-    );
-    if (match && row[match]) return row[match];
-  }
-  return "";
+/* ── Get applicableSmsGateway value (case-insensitive key) ── */
+function getGateway(row) {
+  const key = Object.keys(row).find(
+    k => k.toLowerCase() === "applicablesmsgateway"
+  );
+  return key ? row[key] : "";
 }
 
-/* ── Process rows for a list of operators ── */
-function processOperators(rows, operators, type) {
-  const dateStr = getYesterday();
+/* ── Count rows per operator from a parsed CSV ── */
+function countByOperator(rows, operators) {
+  const counts = {};
+  operators.forEach(op => counts[op] = 0);
 
-  return operators.map(op => {
-    const opRows = rows.filter(r => {
-      const gw = getField(r,
-        "applicableSmsGateway",
-        "applicableSmSGateway",
-        "gateway",
-        "operator",
-        "ans"
-      );
-      return gw.toLowerCase() === op.toLowerCase();
-    });
+  for (const row of rows) {
+    const gw = getGateway(row);
+    const match = operators.find(
+      op => op.toLowerCase() === gw.toLowerCase()
+    );
+    if (match) counts[match]++;
+  }
+  return counts;
+}
 
-    let success = 0, error = 0;
-    for (const r of opRows) {
-      const code = getField(r,
-        "ansResponseCode",
-        "ansresponsecode",
-        "responseCode",
-        "response_code",
-        "code"
-      );
-      if (String(code).trim() === "1000") success++;
-      else error++;
-    }
+/* ── Build result rows ── */
+function buildResults(successRows, errorRows, operators, type) {
+  const date        = getYesterday();
+  const successCount = countByOperator(successRows || [], operators);
+  const errorCount   = countByOperator(errorRows   || [], operators);
 
-    return { date: dateStr, ans: op, type, error, success, total: error + success };
-  });
+  return operators.map(op => ({
+    date,
+    ans:     op,
+    type,
+    success: successCount[op] || 0,
+    error:   errorCount[op]   || 0,
+    total:  (successCount[op] || 0) + (errorCount[op] || 0)
+  }));
 }
 
 /* ── Number formatter ── */
 function fmt(n) { return n.toLocaleString(); }
 
-/* ── Read a file and parse it ── */
+/* ── File reader ── */
 function readFile(file, callback) {
   const reader = new FileReader();
   reader.onload = e => callback(parseCSV(e.target.result));
   reader.readAsText(file);
 }
 
-/* ── Check if button should be enabled ── */
+/* ── Enable process button if at least one file loaded ── */
 function checkReady() {
-  const btn = document.getElementById("process-btn");
-  btn.disabled = !(mnoRawRows || iptspRawRows);
+  const ready = csvMnoSuccess || csvMnoError || csvIptspSuccess || csvIptspError;
+  document.getElementById("process-btn").disabled = !ready;
 }
 
-/* ── Show toast notification ── */
-function showToast(message) {
-  const toast = document.getElementById("toast");
-  toast.textContent = message;
-  toast.classList.add("show");
-  setTimeout(() => toast.classList.remove("show"), 2500);
+/* ── Toast ── */
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2500);
 }
 
-/* ── Render results table ── */
+/* ── Render table ── */
 function renderTable() {
   const tbody = document.getElementById("result-tbody");
   tbody.innerHTML = "";
@@ -134,8 +130,6 @@ function renderTable() {
   let lastType = null;
 
   for (const row of allResults) {
-
-    // Section divider
     if (!lastType && row.type === "MNO") {
       const div = document.createElement("tr");
       div.className = "divider-row";
@@ -167,7 +161,6 @@ function renderTable() {
     tbody.appendChild(tr);
   }
 
-  // Update summary stats
   document.getElementById("stat-success").textContent = fmt(totalSuccess);
   document.getElementById("stat-error").textContent   = fmt(totalError);
   document.getElementById("stat-total").textContent   = fmt(totalSuccess + totalError);
@@ -175,11 +168,12 @@ function renderTable() {
     `${allResults.length} operators · ${getYesterday()}`;
 }
 
-/* ── Main: process uploaded files ── */
+/* ── Main process ── */
 function processFiles() {
-  allResults = [];
-  if (mnoRawRows)   allResults.push(...processOperators(mnoRawRows,   MNO_OPERATORS,   "MNO"));
-  if (iptspRawRows) allResults.push(...processOperators(iptspRawRows, IPTSP_OPERATORS, "IPTSP"));
+  allResults = [
+    ...buildResults(csvMnoSuccess,   csvMnoError,   MNO_OPERATORS,   "MNO"),
+    ...buildResults(csvIptspSuccess, csvIptspError, IPTSP_OPERATORS, "IPTSP")
+  ];
 
   renderTable();
 
@@ -188,72 +182,59 @@ function processFiles() {
   section.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-/* ── Copy tab-separated values for Google Sheets ── */
+/* ── Copy TSV for Google Sheets ── */
 function copyForSheets() {
   const tsv = allResults
     .map(r => [r.date, r.ans, r.error, r.success, r.total].join("\t"))
     .join("\n");
 
   navigator.clipboard.writeText(tsv)
-    .then(() => showToast("✓ Copied! Now paste into Google Sheets"))
-    .catch(() => showToast("Copy failed — please select and copy manually"));
+    .then(() => showToast("✓ Copied! Paste into Google Sheets"))
+    .catch(() => showToast("Copy failed — please select manually"));
 }
 
-/* ── Download as CSV file ── */
+/* ── Download CSV ── */
 function downloadCSV() {
   const header = "Date,ANS,Error,Success,Total";
   const rows   = allResults
     .map(r => [r.date, r.ans, r.error, r.success, r.total].join(","))
     .join("\n");
-
   const blob = new Blob([header + "\n" + rows], { type: "text/csv" });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement("a");
-  const date = getYesterday().replace(/ - /g, "-");
-
   a.href     = url;
-  a.download = `kibana-report-${date}.csv`;
+  a.download = `kibana-report-${getYesterday().replace(/ - /g, "-")}.csv`;
   a.click();
   URL.revokeObjectURL(url);
   showToast("✓ CSV downloaded");
 }
 
-/* ── File input event listeners ── */
-document.getElementById("mno-file").addEventListener("change", function () {
-  const file = this.files[0];
-  if (!file) return;
+/* ── File input bindings ── */
+function bindFileInput(id, statusId, cardId, storeKey, statusClass) {
+  document.getElementById(id).addEventListener("change", function () {
+    const file = this.files[0];
+    if (!file) return;
+    const status = document.getElementById(statusId);
+    status.textContent = "Reading...";
+    status.className   = "file-status";
+    readFile(file, rows => {
+      if      (storeKey === "mnoSuccess")   csvMnoSuccess   = rows;
+      else if (storeKey === "mnoError")     csvMnoError     = rows;
+      else if (storeKey === "iptspSuccess") csvIptspSuccess = rows;
+      else if (storeKey === "iptspError")   csvIptspError   = rows;
 
-  const status = document.getElementById("mno-status");
-  const card   = document.getElementById("mno-card");
-  status.textContent  = "Reading...";
-  status.className    = "file-status";
-
-  readFile(file, rows => {
-    mnoRawRows          = rows;
-    status.textContent  = `✓ ${file.name} · ${rows.length.toLocaleString()} rows`;
-    status.className    = "file-status loaded";
-    card.classList.add("has-file");
-    checkReady();
+      status.textContent = `✓ ${file.name} · ${rows.length.toLocaleString()} rows`;
+      status.className   = `file-status ${statusClass}`;
+      document.getElementById(cardId).classList.add("has-file");
+      checkReady();
+    });
   });
-});
+}
 
-document.getElementById("iptsp-file").addEventListener("change", function () {
-  const file = this.files[0];
-  if (!file) return;
+bindFileInput("mno-success-file",   "mno-success-status",   "mno-success-card",   "mnoSuccess",   "success-loaded");
+bindFileInput("mno-error-file",     "mno-error-status",     "mno-error-card",     "mnoError",     "error-loaded");
+bindFileInput("iptsp-success-file", "iptsp-success-status", "iptsp-success-card", "iptspSuccess", "success-loaded");
+bindFileInput("iptsp-error-file",   "iptsp-error-status",   "iptsp-error-card",   "iptspError",   "error-loaded");
 
-  const status = document.getElementById("iptsp-status");
-  const card   = document.getElementById("iptsp-card");
-  status.textContent  = "Reading...";
-  status.className    = "file-status";
-
-  readFile(file, rows => {
-    iptspRawRows        = rows;
-    status.textContent  = `✓ ${file.name} · ${rows.length.toLocaleString()} rows`;
-    status.className    = "file-status iptsp-loaded";
-    card.classList.add("has-file");
-    checkReady();
-  });
-});
-
-/* ── Init: set yesterday date on load ── */
+/* ── Init ── */
 document.getElementById("date-display").textContent = getYesterday();

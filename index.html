@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kibana Report Processor — Infozillion Teletech</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="app">
+
+  <header>
+    <div class="header-tag">
+      <div class="dot"></div>
+      INFOZILLION TELETECH BD LTD
+    </div>
+    <h1>Kibana<br/><span>Report Processor</span></h1>
+    <p class="subtitle">MNO &amp; IPTSP CDR &middot; Error / Success / Total &middot; Auto-formatted for Google Sheets</p>
+    <div class="date-badge">
+      <span class="label">Reporting date</span>
+      <span class="value" id="date-display">&mdash;</span>
+    </div>
+  </header>
+
+  <div class="upload-grid">
+
+    <div class="upload-card mno" id="mno-card">
+      <div class="card-type mno">MNO CDR</div>
+      <div class="card-title">Mobile Operators</div>
+      <div class="card-ops">Grameenphone &middot; Robi<br/>Banglalink &middot; Teletalk</div>
+      <div class="file-input-wrap">
+        <input type="file" id="mno-file" accept=".csv" />
+        <div class="file-btn">
+          <span>📄</span>
+          <span>Choose MNO CSV file</span>
+        </div>
+      </div>
+      <div class="file-status" id="mno-status">No file selected</div>
+    </div>
+
+    <div class="upload-card iptsp" id="iptsp-card">
+      <div class="card-type iptsp">IPTSP CDR</div>
+      <div class="card-title">Internet Operators</div>
+      <div class="card-ops">ADN &middot; FusionNet &middot; Mirnet<br/>Brilliant &middot; RanksITT &middot; +13 more</div>
+      <div class="file-input-wrap">
+        <input type="file" id="iptsp-file" accept=".csv" />
+        <div class="file-btn">
+          <span>📄</span>
+          <span>Choose IPTSP CSV file</span>
+        </div>
+      </div>
+      <div class="file-status" id="iptsp-status">No file selected</div>
+    </div>
+
+  </div>
+
+  <div class="process-wrap">
+    <button class="process-btn" id="process-btn" disabled onclick="processFiles()">
+      ⚡ Generate Report
+    </button>
+  </div>
+
+  <div class="results-section" id="results-section">
+
+    <div class="results-header">
+      <span class="results-title">Report Output</span>
+      <span class="results-meta" id="results-meta"></span>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Total Success</div>
+        <div class="stat-value success" id="stat-success">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Error</div>
+        <div class="stat-value error" id="stat-error">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Grand Total</div>
+        <div class="stat-value total" id="stat-total">0</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>ANS / Operator</th>
+              <th class="num">Error</th>
+              <th class="num">Success</th>
+              <th class="num">Total</th>
+            </tr>
+          </thead>
+          <tbody id="result-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-action primary" onclick="copyForSheets()">
+        📋 Copy for Google Sheets
+      </button>
+      <button class="btn-action" onclick="downloadCSV()">
+        ⬇ Download as CSV
+      </button>
+    </div>
+
+  </div>
+
+  <footer>
+    <div class="footer-brand">Infozillion <span>Teletech</span> BD Ltd &middot; Service Assurance</div>
+    <div class="footer-info">ansResponseCode: 1000 = Success &middot; else = Error</div>
+  </footer>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -3,22 +3,6 @@
    Infozillion Teletech BD Ltd · Service Assurance
    ───────────────────────────────────────────────────────── */
 
-const MNO_OPERATORS = [
-  "Grameenphone", "Banglalink", "Robi", "Teletalk"
-];
-
-const IPTSP_OPERATORS = [
-  "ADN", "FusionNet", "Mirnet", "Brilliant", "RanksITT",
-  "AmberIT", "Metronet", "Premium", "RaceOnline", "Bracnet",
-  "Weblink", "RedData", "BDCOM", "BTCL", "Link3", "ICON", "AGNI", "ICC"
-];
-
-/* ── State: 4 CSVs ── */
-let csvMnoSuccess   = null;  // MNO   ansResponseCode is     1000
-let csvMnoError     = null;  // MNO   ansResponseCode is not 1000
-let csvIptspSuccess = null;  // IPTSP ansResponseCode is     1000
-let csvIptspError   = null;  // IPTSP ansResponseCode is not 1000
-
 let allResults = [];
 
 /* ── Yesterday: DD - Mon - YY ── */
@@ -32,86 +16,8 @@ function getYesterday() {
   return `${day} - ${months[d.getMonth()]} - ${yr}`;
 }
 
-/* ── CSV parser ── */
-function parseCSV(text) {
-  const lines = text.trim().split(/\r?\n/);
-  if (lines.length < 2) return [];
-
-  const headers = lines[0].split(",").map(h =>
-    h.trim().replace(/^"|"$/g, "").trim()
-  );
-
-  return lines.slice(1).map(line => {
-    const cols = [];
-    let cur = "", inQ = false;
-    for (const ch of line) {
-      if (ch === '"')             { inQ = !inQ; }
-      else if (ch === ',' && !inQ){ cols.push(cur.trim()); cur = ""; }
-      else                        { cur += ch; }
-    }
-    cols.push(cur.trim());
-    const row = {};
-    headers.forEach((h, i) => {
-      row[h] = (cols[i] || "").replace(/^"|"$/g, "").trim();
-    });
-    return row;
-  });
-}
-
-/* ── Get applicableSmsGateway value (case-insensitive key) ── */
-function getGateway(row) {
-  const key = Object.keys(row).find(
-    k => k.toLowerCase() === "applicablesmsgateway"
-  );
-  return key ? row[key] : "";
-}
-
-/* ── Count rows per operator from a parsed CSV ── */
-function countByOperator(rows, operators) {
-  const counts = {};
-  operators.forEach(op => counts[op] = 0);
-
-  for (const row of rows) {
-    const gw = getGateway(row);
-    const match = operators.find(
-      op => op.toLowerCase() === gw.toLowerCase()
-    );
-    if (match) counts[match]++;
-  }
-  return counts;
-}
-
-/* ── Build result rows ── */
-function buildResults(successRows, errorRows, operators, type) {
-  const date        = getYesterday();
-  const successCount = countByOperator(successRows || [], operators);
-  const errorCount   = countByOperator(errorRows   || [], operators);
-
-  return operators.map(op => ({
-    date,
-    ans:     op,
-    type,
-    success: successCount[op] || 0,
-    error:   errorCount[op]   || 0,
-    total:  (successCount[op] || 0) + (errorCount[op] || 0)
-  }));
-}
-
 /* ── Number formatter ── */
-function fmt(n) { return n.toLocaleString(); }
-
-/* ── File reader ── */
-function readFile(file, callback) {
-  const reader = new FileReader();
-  reader.onload = e => callback(parseCSV(e.target.result));
-  reader.readAsText(file);
-}
-
-/* ── Enable process button if at least one file loaded ── */
-function checkReady() {
-  const ready = csvMnoSuccess || csvMnoError || csvIptspSuccess || csvIptspError;
-  document.getElementById("process-btn").disabled = !ready;
-}
+function fmt(n) { return Number(n).toLocaleString(); }
 
 /* ── Toast ── */
 function showToast(msg) {
@@ -121,7 +27,35 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove("show"), 2500);
 }
 
-/* ── Render table ── */
+/* ── Clear all inputs ── */
+function clearAll() {
+  document.querySelectorAll(".count-input").forEach(el => el.value = "");
+  document.getElementById("results-section").classList.remove("visible");
+  allResults = [];
+}
+
+/* ── Generate Report ── */
+function generateReport() {
+  const date = getYesterday();
+  allResults = [];
+
+  document.querySelectorAll(".input-row").forEach(row => {
+    const op      = row.dataset.op;
+    const type    = row.dataset.type;
+    const success = parseInt(row.querySelector(".success-input").value) || 0;
+    const error   = parseInt(row.querySelector(".error-input").value)   || 0;
+    const total   = success + error;
+    allResults.push({ date, ans: op, type, success, error, total });
+  });
+
+  renderTable();
+
+  const section = document.getElementById("results-section");
+  section.classList.add("visible");
+  section.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+/* ── Render results table ── */
 function renderTable() {
   const tbody = document.getElementById("result-tbody");
   tbody.innerHTML = "";
@@ -168,26 +102,11 @@ function renderTable() {
     `${allResults.length} operators · ${getYesterday()}`;
 }
 
-/* ── Main process ── */
-function processFiles() {
-  allResults = [
-    ...buildResults(csvMnoSuccess,   csvMnoError,   MNO_OPERATORS,   "MNO"),
-    ...buildResults(csvIptspSuccess, csvIptspError, IPTSP_OPERATORS, "IPTSP")
-  ];
-
-  renderTable();
-
-  const section = document.getElementById("results-section");
-  section.classList.add("visible");
-  section.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
 /* ── Copy TSV for Google Sheets ── */
 function copyForSheets() {
   const tsv = allResults
     .map(r => [r.date, r.ans, r.error, r.success, r.total].join("\t"))
     .join("\n");
-
   navigator.clipboard.writeText(tsv)
     .then(() => showToast("✓ Copied! Paste into Google Sheets"))
     .catch(() => showToast("Copy failed — please select manually"));
@@ -209,32 +128,19 @@ function downloadCSV() {
   showToast("✓ CSV downloaded");
 }
 
-/* ── File input bindings ── */
-function bindFileInput(id, statusId, cardId, storeKey, statusClass) {
-  document.getElementById(id).addEventListener("change", function () {
-    const file = this.files[0];
-    if (!file) return;
-    const status = document.getElementById(statusId);
-    status.textContent = "Reading...";
-    status.className   = "file-status";
-    readFile(file, rows => {
-      if      (storeKey === "mnoSuccess")   csvMnoSuccess   = rows;
-      else if (storeKey === "mnoError")     csvMnoError     = rows;
-      else if (storeKey === "iptspSuccess") csvIptspSuccess = rows;
-      else if (storeKey === "iptspError")   csvIptspError   = rows;
-
-      status.textContent = `✓ ${file.name} · ${rows.length.toLocaleString()} rows`;
-      status.className   = `file-status ${statusClass}`;
-      document.getElementById(cardId).classList.add("has-file");
-      checkReady();
-    });
-  });
-}
-
-bindFileInput("mno-success-file",   "mno-success-status",   "mno-success-card",   "mnoSuccess",   "success-loaded");
-bindFileInput("mno-error-file",     "mno-error-status",     "mno-error-card",     "mnoError",     "error-loaded");
-bindFileInput("iptsp-success-file", "iptsp-success-status", "iptsp-success-card", "iptspSuccess", "success-loaded");
-bindFileInput("iptsp-error-file",   "iptsp-error-status",   "iptsp-error-card",   "iptspError",   "error-loaded");
-
 /* ── Init ── */
 document.getElementById("date-display").textContent = getYesterday();
+
+/* ── Tab key: move to next input ── */
+document.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    const inputs = Array.from(document.querySelectorAll(".count-input"));
+    const idx    = inputs.indexOf(document.activeElement);
+    if (idx >= 0 && idx < inputs.length - 1) {
+      inputs[idx + 1].focus();
+      e.preventDefault();
+    } else if (idx === inputs.length - 1) {
+      generateReport();
+    }
+  }
+});

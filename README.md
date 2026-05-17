@@ -2,52 +2,104 @@
 
 **Infozillion Teletech BD Ltd · Service Assurance**
 
-Browser-based tool to process Kibana CSV exports and generate daily ANS traffic reports — formatted directly for Google Sheets.
+A professional browser-based tool to generate daily ANS traffic reports from Kibana — formatted directly for Google Sheets paste.
+
+---
+
+## Live Tool
+
+```
+https://your-username.github.io/kibana-report-processor/
+```
 
 ---
 
 ## How it works
 
-Upload **4 CSV files** exported from Kibana:
+Instead of downloading large CSVs, you read the **Documents count** directly from Kibana's Discover page and enter the numbers into this tool. The tool calculates totals, formats the date, and gives you a one-click copy for Google Sheets.
 
-| # | File | Filter used in Kibana |
-|---|------|-----------------------|
-| 1 | MNO Success   | A2P Transactional MNO CDR · `ansResponseCode is 1000` |
-| 2 | MNO Error     | A2P Transactional MNO CDR · `ansResponseCode is not 1000` |
-| 3 | IPTSP Success | A2P Transactional IPTSP CDR · `ansResponseCode is 1000` |
-| 4 | IPTSP Error   | A2P Transactional IPTSP CDR · `ansResponseCode is not 1000` |
+---
 
-The tool reads `applicableSmsGateway` from each CSV and counts rows per operator.
+## Daily Workflow
+
+### Step 1 — Open Kibana Discover
+
+1. Connect VPN
+2. Go to `https://loganalyzerdc.mnpspbd.com/`
+3. Login with your credentials
+4. Navigate to **Discover**
+
+### Step 2 — MNO Data (A2P Transactional MNO CDR)
+
+1. Select data view: **A2P Transactional MNO CDR**
+2. Set date range: yesterday `00:00:00.000` → `23:59:59.999`
+3. For each operator (Grameenphone, Robi, Banglalink, Teletalk):
+   - Add filter: `ansResponseCode is 1000` + `applicableSmsGateway is [operator]`
+   - Note the **Documents (X)** count → this is **Success**
+   - Change filter to `ansResponseCode is not 1000`
+   - Note the count → this is **Error**
+
+### Step 3 — IPTSP Data (A2P Transactional IPTSP CDR)
+
+1. Select data view: **A2P Transactional IPTSP CDR**
+2. Same date range
+3. Repeat for all 18 IPTSP operators
+
+### Step 4 — Generate Report
+
+1. Open the tool
+2. Enter all Success and Error counts
+3. Click **⚡ Generate Report**
+4. Click **📋 Copy for Google Sheets**
+5. Open Google Sheet → click first empty cell → **Paste**
 
 ---
 
 ## Operators
 
-**MNO:** Grameenphone, Banglalink, Robi, Teletalk
+**MNO (4 operators)**
+| Operator | Type |
+|----------|------|
+| Grameenphone | MNO |
+| Robi | MNO |
+| Banglalink | MNO |
+| Teletalk | MNO |
 
-**IPTSP:** ADN, FusionNet, Mirnet, Brilliant, RanksITT, AmberIT, Metronet, Premium, RaceOnline, Bracnet, Weblink, RedData, BDCOM, BTCL, Link3, ICON, AGNI, ICC
+**IPTSP (18 operators)**
+| Operator | Operator | Operator |
+|----------|----------|----------|
+| ADN | FusionNet | Mirnet |
+| Brilliant | RanksITT | AmberIT |
+| Metronet | Premium | RaceOnline |
+| Bracnet | Weblink | RedData |
+| BDCOM | BTCL | Link3 |
+| ICON | AGNI | ICC |
 
 ---
 
-## Daily workflow
+## Google Sheet Column Format
 
-1. Open Kibana → Discover → **A2P Transactional MNO CDR**
-2. Set date: yesterday 00:00:00.000 → 23:59:59.999
-3. Filter: `ansResponseCode is 1000` → Export CSV (MNO Success)
-4. Filter: `ansResponseCode is not 1000` → Export CSV (MNO Error)
-5. Switch to **A2P Transactional IPTSP CDR** → repeat steps 3–4
-6. Open the tool → upload 4 files → **⚡ Generate Report**
-7. Click **📋 Copy for Google Sheets** → paste into Sheet
+| A | B | C | D | E |
+|---|---|---|---|---|
+| Date | ANS | Error | Success | Total |
+| 17 - May - 26 | Grameenphone | 172717 | 4879070 | 5051787 |
 
 ---
 
-## Project structure
+## Keyboard Shortcut
+
+- **Enter** on any input → moves to next input automatically
+- **Enter** on the last input → generates the report
+
+---
+
+## Project Structure
 
 ```
 kibana-csv-processor/
-├── index.html   — Page structure
-├── style.css    — Styling
-├── app.js       — Logic
+├── index.html   — Page structure and input form
+├── style.css    — Dark theme styling
+├── app.js       — Report generation logic
 └── README.md    — This file
 ```
 
@@ -55,12 +107,17 @@ kibana-csv-processor/
 
 ## Deploy to GitHub Pages
 
-1. Create repo (e.g. `kibana-report-processor`) — Public
-2. Upload all 4 files
-3. Settings → Pages → Branch: `main` → Folder: `/ (root)` → Save
-4. Live at: `https://your-username.github.io/kibana-report-processor/`
+1. Create a new GitHub repository — name: `kibana-report-processor` — set to **Public**
+2. Upload all 4 files: `index.html`, `style.css`, `app.js`, `README.md`
+3. Go to **Settings → Pages**
+4. Source: **Deploy from a branch** → Branch: `main` → Folder: `/ (root)` → **Save**
+5. Wait ~2 minutes — live at:
 
-> All processing is done in the browser. No data is sent anywhere.
+```
+https://your-username.github.io/kibana-report-processor/
+```
+
+> All processing happens in the browser. No data is sent to any server.
 
 ---
 

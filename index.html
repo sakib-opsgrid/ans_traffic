@@ -9,89 +9,165 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
 <div class="app">
 
   <header>
-    <div class="header-tag">
-      <div class="dot"></div>
-      INFOZILLION TELETECH BD LTD
-    </div>
+    <div class="header-tag"><div class="dot"></div>INFOZILLION TELETECH BD LTD</div>
     <h1>Kibana<br/><span>Report Processor</span></h1>
-    <p class="subtitle">MNO &amp; IPTSP CDR &middot; Upload 4 CSVs &middot; Auto-formatted for Google Sheets</p>
+    <p class="subtitle">MNO &amp; IPTSP CDR &middot; Enter document counts from Kibana &middot; Auto-formatted for Google Sheets</p>
     <div class="date-badge">
       <span class="label">Reporting date</span>
       <span class="value" id="date-display">&mdash;</span>
     </div>
   </header>
 
+  <div class="instructions">
+    <div class="inst-step"><span class="inst-num">1</span><span>Kibana → filter <code>ansResponseCode is 1000</code> + operator → note <strong>Documents count</strong></span></div>
+    <div class="inst-step"><span class="inst-num">2</span><span>Same with <code>ansResponseCode is not 1000</code> → note count</span></div>
+    <div class="inst-step"><span class="inst-num">3</span><span>Enter all counts below → click <strong>Generate Report</strong></span></div>
+  </div>
+
   <!-- MNO Section -->
-  <div class="section-label mno-label">MNO CDR &mdash; Grameenphone &middot; Robi &middot; Banglalink &middot; Teletalk</div>
-  <div class="upload-grid">
-
-    <div class="upload-card mno" id="mno-success-card">
-      <div class="card-type mno">MNO · SUCCESS</div>
-      <div class="card-title">ansResponseCode <span class="is-badge">is 1000</span></div>
-      <div class="file-input-wrap">
-        <input type="file" id="mno-success-file" accept=".csv" />
-        <div class="file-btn"><span>📄</span><span>Choose CSV</span></div>
-      </div>
-      <div class="file-status" id="mno-success-status">No file selected</div>
+  <div class="section-label mno-label">MNO CDR — A2P Transactional MNO CDR</div>
+  <div class="input-table">
+    <div class="input-header">
+      <span>Operator</span>
+      <span>Success <small>(is 1000)</small></span>
+      <span>Error <small>(is not 1000)</small></span>
     </div>
-
-    <div class="upload-card mno error-card" id="mno-error-card">
-      <div class="card-type mno-err">MNO · ERROR</div>
-      <div class="card-title">ansResponseCode <span class="is-not-badge">is not 1000</span></div>
-      <div class="file-input-wrap">
-        <input type="file" id="mno-error-file" accept=".csv" />
-        <div class="file-btn"><span>📄</span><span>Choose CSV</span></div>
-      </div>
-      <div class="file-status" id="mno-error-status">No file selected</div>
+    <div class="input-row" data-op="GrameenPhone" data-type="MNO">
+      <span class="op-name">Grameenphone</span>
+      <input type="number" class="count-input success-input" placeholder="0" min="0" />
+      <input type="number" class="count-input error-input" placeholder="0" min="0" />
     </div>
-
+    <div class="input-row" data-op="Robi" data-type="MNO">
+      <span class="op-name">Robi</span>
+      <input type="number" class="count-input success-input" placeholder="0" min="0" />
+      <input type="number" class="count-input error-input" placeholder="0" min="0" />
+    </div>
+    <div class="input-row" data-op="Banglalink" data-type="MNO">
+      <span class="op-name">Banglalink</span>
+      <input type="number" class="count-input success-input" placeholder="0" min="0" />
+      <input type="number" class="count-input error-input" placeholder="0" min="0" />
+    </div>
+    <div class="input-row" data-op="Teletalk" data-type="MNO">
+      <span class="op-name">Teletalk</span>
+      <input type="number" class="count-input success-input" placeholder="0" min="0" />
+      <input type="number" class="count-input error-input" placeholder="0" min="0" />
+    </div>
   </div>
 
   <!-- IPTSP Section -->
-  <div class="section-label iptsp-label">IPTSP CDR &mdash; ADN &middot; FusionNet &middot; Mirnet &middot; Brilliant &middot; RanksITT &middot; +13 more</div>
-  <div class="upload-grid">
-
-    <div class="upload-card iptsp" id="iptsp-success-card">
-      <div class="card-type iptsp">IPTSP · SUCCESS</div>
-      <div class="card-title">ansResponseCode <span class="is-badge">is 1000</span></div>
-      <div class="file-input-wrap">
-        <input type="file" id="iptsp-success-file" accept=".csv" />
-        <div class="file-btn"><span>📄</span><span>Choose CSV</span></div>
-      </div>
-      <div class="file-status" id="iptsp-success-status">No file selected</div>
+  <div class="section-label iptsp-label">IPTSP CDR — A2P Transactional IPTSP CDR</div>
+  <div class="input-table">
+    <div class="input-header">
+      <span>Operator</span>
+      <span>Success <small>(is 1000)</small></span>
+      <span>Error <small>(is not 1000)</small></span>
     </div>
-
-    <div class="upload-card iptsp error-card" id="iptsp-error-card">
-      <div class="card-type iptsp-err">IPTSP · ERROR</div>
-      <div class="card-title">ansResponseCode <span class="is-not-badge">is not 1000</span></div>
-      <div class="file-input-wrap">
-        <input type="file" id="iptsp-error-file" accept=".csv" />
-        <div class="file-btn"><span>📄</span><span>Choose CSV</span></div>
-      </div>
-      <div class="file-status" id="iptsp-error-status">No file selected</div>
+    <div class="input-row" data-op="ADN" data-type="IPTSP">
+      <span class="op-name">ADN</span>
+      <input type="number" class="count-input success-input" placeholder="0" min="0" />
+      <input type="number" class="count-input error-input" placeholder="0" min="0" />
     </div>
-
+    <div class="input-row" data-op="FusionNet" data-type="IPTSP">
+      <span class="op-name">FusionNet</span>
+      <input type="number" class="count-input success-input" placeholder="0" min="0" />
+      <input type="number" class="count-input error-input" placeholder="0" min="0" />
+    </div>
+    <div class="input-row" data-op="Mirnet" data-type="IPTSP">
+      <span class="op-name">Mirnet</span>
+      <input type="number" class="count-input success-input" placeholder="0" min="0" />
+      <input type="number" class="count-input error-input" placeholder="0" min="0" />
+    </div>
+    <div class="input-row" data-op="Brilliant" data-type="IPTSP">
+      <span class="op-name">Brilliant</span>
+      <input type="number" class="count-input success-input" placeholder="0" min="0" />
+      <input type="number" class="count-input error-input" placeholder="0" min="0" />
+    </div>
+    <div class="input-row" data-op="RanksITT" data-type="IPTSP">
+      <span class="op-name">RanksITT</span>
+      <input type="number" class="count-input success-input" placeholder="0" min="0" />
+      <input type="number" class="count-input error-input" placeholder="0" min="0" />
+    </div>
+    <div class="input-row" data-op="AmberIT" data-type="IPTSP">
+      <span class="op-name">AmberIT</span>
+      <input type="number" class="count-input success-input" placeholder="0" min="0" />
+      <input type="number" class="count-input error-input" placeholder="0" min="0" />
+    </div>
+    <div class="input-row" data-op="Metronet" data-type="IPTSP">
+      <span class="op-name">Metronet</span>
+      <input type="number" class="count-input success-input" placeholder="0" min="0" />
+      <input type="number" class="count-input error-input" placeholder="0" min="0" />
+    </div>
+    <div class="input-row" data-op="Premium" data-type="IPTSP">
+      <span class="op-name">Premium</span>
+      <input type="number" class="count-input success-input" placeholder="0" min="0" />
+      <input type="number" class="count-input error-input" placeholder="0" min="0" />
+    </div>
+    <div class="input-row" data-op="RaceOnline" data-type="IPTSP">
+      <span class="op-name">RaceOnline</span>
+      <input type="number" class="count-input success-input" placeholder="0" min="0" />
+      <input type="number" class="count-input error-input" placeholder="0" min="0" />
+    </div>
+    <div class="input-row" data-op="Bracnet" data-type="IPTSP">
+      <span class="op-name">Bracnet</span>
+      <input type="number" class="count-input success-input" placeholder="0" min="0" />
+      <input type="number" class="count-input error-input" placeholder="0" min="0" />
+    </div>
+    <div class="input-row" data-op="Weblink" data-type="IPTSP">
+      <span class="op-name">Weblink</span>
+      <input type="number" class="count-input success-input" placeholder="0" min="0" />
+      <input type="number" class="count-input error-input" placeholder="0" min="0" />
+    </div>
+    <div class="input-row" data-op="RedData" data-type="IPTSP">
+      <span class="op-name">RedData</span>
+      <input type="number" class="count-input success-input" placeholder="0" min="0" />
+      <input type="number" class="count-input error-input" placeholder="0" min="0" />
+    </div>
+    <div class="input-row" data-op="BDCOM" data-type="IPTSP">
+      <span class="op-name">BDCOM</span>
+      <input type="number" class="count-input success-input" placeholder="0" min="0" />
+      <input type="number" class="count-input error-input" placeholder="0" min="0" />
+    </div>
+    <div class="input-row" data-op="BTCL" data-type="IPTSP">
+      <span class="op-name">BTCL</span>
+      <input type="number" class="count-input success-input" placeholder="0" min="0" />
+      <input type="number" class="count-input error-input" placeholder="0" min="0" />
+    </div>
+    <div class="input-row" data-op="Link3" data-type="IPTSP">
+      <span class="op-name">Link3</span>
+      <input type="number" class="count-input success-input" placeholder="0" min="0" />
+      <input type="number" class="count-input error-input" placeholder="0" min="0" />
+    </div>
+    <div class="input-row" data-op="ICON" data-type="IPTSP">
+      <span class="op-name">ICON</span>
+      <input type="number" class="count-input success-input" placeholder="0" min="0" />
+      <input type="number" class="count-input error-input" placeholder="0" min="0" />
+    </div>
+    <div class="input-row" data-op="AGNI" data-type="IPTSP">
+      <span class="op-name">AGNI</span>
+      <input type="number" class="count-input success-input" placeholder="0" min="0" />
+      <input type="number" class="count-input error-input" placeholder="0" min="0" />
+    </div>
+    <div class="input-row" data-op="ICC" data-type="IPTSP">
+      <span class="op-name">ICC</span>
+      <input type="number" class="count-input success-input" placeholder="0" min="0" />
+      <input type="number" class="count-input error-input" placeholder="0" min="0" />
+    </div>
   </div>
 
-  <!-- Process -->
   <div class="process-wrap">
-    <button class="process-btn" id="process-btn" disabled onclick="processFiles()">
-      ⚡ Generate Report
-    </button>
+    <button class="process-btn" onclick="generateReport()">⚡ Generate Report</button>
+    <button class="clear-btn" onclick="clearAll()">✕ Clear All</button>
   </div>
 
   <!-- Results -->
   <div class="results-section" id="results-section">
-
     <div class="results-header">
       <span class="results-title">Report Output</span>
       <span class="results-meta" id="results-meta"></span>
     </div>
-
     <div class="stats-row">
       <div class="stat-card">
         <div class="stat-label">Total Success</div>
@@ -106,7 +182,6 @@
         <div class="stat-value total" id="stat-total">0</div>
       </div>
     </div>
-
     <div class="table-wrap">
       <div class="table-scroll">
         <table>
@@ -123,16 +198,10 @@
         </table>
       </div>
     </div>
-
     <div class="action-row">
-      <button class="btn-action primary" onclick="copyForSheets()">
-        📋 Copy for Google Sheets
-      </button>
-      <button class="btn-action" onclick="downloadCSV()">
-        ⬇ Download as CSV
-      </button>
+      <button class="btn-action primary" onclick="copyForSheets()">📋 Copy for Google Sheets</button>
+      <button class="btn-action" onclick="downloadCSV()">⬇ Download as CSV</button>
     </div>
-
   </div>
 
   <footer>
@@ -144,7 +213,6 @@
   </footer>
 
 </div>
-
 <div class="toast" id="toast"></div>
 <script src="app.js"></script>
 </body>
